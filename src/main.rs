@@ -15,7 +15,7 @@ fn main() {
         .map(|w| {
             (
                 arraystring::ArrayString::from(w),
-                w.chars().fold(0_u32, |acc, c| acc | (1 << c as u8 - b'a')),
+                w.chars().fold(0_u32, |acc, c| acc | (1 << (c as u8 - b'a'))),
             )
         })
         .filter(|w| w.1.count_ones() == 5)
@@ -54,20 +54,16 @@ fn main() {
             // println!("At {i} of {}", char_masks.len());
             let mut combos = Vec::with_capacity(10);
             let combo_mask = mask1;
-            for ii in (i + 1)..char_masks.len() {
-                let mask2 = char_masks[ii];
+            for (ii, &mask2) in char_masks.iter().enumerate().skip(i + 1) {
                 if combo_mask & mask2 == 0 {
                     let combo_mask = combo_mask | mask2;
-                    for iii in (ii + 1)..char_masks.len() {
-                        let mask3 = char_masks[iii];
+                    for (iii, &mask3) in char_masks.iter().enumerate().skip(ii + 1) {
                         if combo_mask & mask3 == 0 {
                             let combo_mask = combo_mask | mask3;
-                            for iv in (iii + 1)..char_masks.len() {
-                                let mask4 = char_masks[iv];
+                            for (iv, &mask4) in char_masks.iter().enumerate().skip(iii + 1) {
                                 if combo_mask & mask4 == 0 {
                                     let combo_mask = combo_mask | mask4;
-                                    for v in (iv + 1)..char_masks.len() {
-                                        let mask5 = char_masks[v];
+                                    for &mask5 in char_masks.iter().skip(iv + 1) {
                                         if combo_mask & mask5 == 0 {
                                             combos.push([mask1, mask2, mask3, mask4, mask5]);
                                         }
@@ -98,7 +94,7 @@ fn main() {
     // Make every possible word combination from valid mask combinations
     let answer = combos
         .iter()
-        .map(|masks| {
+        .flat_map(|masks| {
             masks
                 .iter()
                 .map(|mask| filtered_words.get(mask).unwrap())
@@ -106,7 +102,6 @@ fn main() {
                 .map(|v| v.into_iter().format(", ").to_string())
                 .collect_vec()
         })
-        .flatten()
         .sorted()
         .format("\n")
         .to_string();
